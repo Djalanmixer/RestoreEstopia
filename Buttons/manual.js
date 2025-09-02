@@ -81,7 +81,7 @@ module.exports = {
             if (!member) {
                 try {
                     member = await guild.members.fetch(user.id);
-                } catch (error) {
+                } catch {
                     const embed = new EmbedBuilder()
                         .setColor('#FF0000')
                         .setTitle('Member Not Found')
@@ -179,7 +179,7 @@ module.exports = {
             } else {
                 try {
                     await member.roles.add(role);
-                } catch (error) {
+                } catch {
                     const embed = new EmbedBuilder()
                         .setColor('#FF0000')
                         .setTitle('Error: Permissions')

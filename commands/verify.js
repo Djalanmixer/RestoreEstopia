@@ -111,12 +111,12 @@ module.exports = {
             if(type.type === 'Ticket') {
                 embed = new EmbedBuilder()
                     .setTitle('Verification')
-                    .setDescription(`Click the button below to start verify for <@&${roleId}>!\nOnce you press the \`Verify\` button, use the \`Manual Verication\' Button.\nThis will create a ticket for you to verify.`)
+                    .setDescription(`Click the button below to start verify for <@&${roleId}>!\nOnce you press the \`Verify\` button, use the \`Manual Verication' Button.\nThis will create a ticket for you to verify.`)
                     .setFooter({ text: 'we as in EstopiaRestore'});
             } else {
                 embed = new EmbedBuilder()
                     .setTitle('Verification')
-                    .setDescription(`Click the button below to verify and get <@&${roleId}>!\nOnce you press the \`Verify\` button, use the \`Manual Verication\' Button.`)
+                    .setDescription(`Click the button below to verify and get <@&${roleId}>!\nOnce you press the \`Verify\` button, use the \`Manual Verication' Button.`)
                     .setFooter({ text: 'we as in EstopiaRestore'});
             }
 

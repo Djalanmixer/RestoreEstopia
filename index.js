@@ -2,10 +2,8 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
-const { REST, Routes } = require('discord.js');
-const { sequelize, AuthedUsers, Key, ApprovedUsers, Panels, Servers, WebUsers, UserDiscordLinks } = require('./models/index');
+const { AuthedUsers, Key, ApprovedUsers, Panels, Servers, WebUsers, UserDiscordLinks } = require('./models/index');
 const express = require('express');
-const { readdirSync } = require('fs');
 const createRouter = require('./server');
 const cors = require('cors');
 
@@ -26,14 +24,11 @@ const client = new Client({
 client.commands = new Collection();
 
 const commandsPath = path.join(__dirname, 'commands');
-const commands = fs.readdirSync(commandsPath);
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-console.log(`Loading commands from ${commandsPath}`);
-for (const commandname of commands) {
-    const filePath = path.join(commandsPath, commandname);
-    console.log(`Loading command at ${filePath}`);
+for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
     const command = require(filePath);
-    // Set a new item in the Collection with the key as the command name and the value as the exported module
     if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
     } else {
@@ -41,34 +36,11 @@ for (const commandname of commands) {
     }
 }
 
-// Construct and prepare an instance of the REST module
-const rest = new REST().setToken(process.env.DISCORD_TOKEN);
-
-// and deploy your commands!
-(async () => {
-	try {
-		console.log(`Started refreshing ${commands.length} application (/) commands.`);
-
-		// The put method is used to fully refresh all commands in the guild with the current set
-		const data = await rest.put(
-			Routes.applicationCommands(process.env.CLIENT_ID),
-			{ body: client.commands.map(command => command.data.toJSON()) },
-		);
-
-		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
-	} catch (error) {
-		// And of course, make sure you catch and log any errors!
-		console.error(error);
-	}
-})();
-
 const app = express();
 
-// Register event handlers
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
-    // Sync Sequelize models
     (async () => {
         try {
             await AuthedUsers.sync();
@@ -85,44 +57,38 @@ client.on('ready', () => {
     })();
 });
 
-// Event Handler
-(async () => {
-    const eventFiles = readdirSync("./events").filter(file => file.endsWith(".js"));
-    const eventNames = [];
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 
-    for (const file of eventFiles) {
-        const event = require(`./events/${file}`);
-        eventNames.push(` ${event.name}`);
-
-        if (event.once) {
-            client.once(event.name, (...args) => event.execute(...args));
-        } else {
-            client.on(event.name, (...args) => event.execute(...args));
-        }
+for (const file of eventFiles) {
+    const event = require(`./events/${file}`);
+    if (event.once) {
+        client.once(event.name, (...args) => event.execute(...args));
+    } else {
+        client.on(event.name, (...args) => event.execute(...args));
     }
-
-    console.log(`Loaded Events: ${eventNames}`);
-})();
+}
 
 app.use(express.json());
 
 const corsOptions = {
-    origin: ['https://test.estopia.net', 'https://restore.estopia.net'], // Replace with the allowed origin(s)
-    methods: ['GET', 'POST'], // Replace with the allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Replace with the allowed headers
-    credentials: true // Allow credentials
+    origin: process.env.CORS_ORIGIN || ['https://test.estopia.net', 'https://restore.estopia.net'],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 };
 
 app.use(cors(corsOptions));
 
-// Routes
-
-const router = createRouter(client);
+const router = createRouter();
 app.use('/', router);
 app.use('/api', router);
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN)
+    .catch(error => {
+        console.error('Failed to login to Discord:', error);
+    });
 
-app.listen(2999, () => {
-    console.log('Server running on port 2999');
+const port = process.env.PORT || 2999;
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });

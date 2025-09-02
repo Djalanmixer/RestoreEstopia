@@ -44,7 +44,7 @@ async function addUserToGuild(guildId, userId, accessToken) {
         } else {
           break; // Exit loop on error
         }
-      } catch (error) {
+      } catch {
         break; // Exit loop on exception
       }
     }
@@ -98,7 +98,7 @@ async function testRefreshToken(refreshToken) {
             return data;
         } else {
             // This will help in debugging
-            const errorData = await response.json();
+            await response.json();
             return null;
         }
     } catch (error) {
@@ -117,7 +117,7 @@ async function getValidToken(accessToken, refreshToken, userId, guildId){
         const newTokenData = await testRefreshToken(refreshToken);
 
         if (newTokenData) {
-            user = await AuthedUsers.update({
+            await AuthedUsers.update({
                 accessToken: newTokenData.access_token
             }, {
                 where: { userId: userId }
@@ -140,7 +140,7 @@ async function getValidToken(accessToken, refreshToken, userId, guildId){
 }
 
 async function getValidTokenAPI(accessToken, refreshToken, userId){
-    if(!accessToken || !refreshToken || !userId || !guildId){
+    if(!accessToken || !refreshToken || !userId){
         return null;
     }
     const isAccessTokenValid = await testAccessToken(accessToken);
@@ -149,7 +149,7 @@ async function getValidTokenAPI(accessToken, refreshToken, userId){
         const newTokenData = await testRefreshToken(refreshToken);
 
         if (newTokenData) {
-            user = await AuthedUsers.update({
+            await AuthedUsers.update({
                 accessToken: newTokenData.access_token
             }, {
                 where: { userId: userId }

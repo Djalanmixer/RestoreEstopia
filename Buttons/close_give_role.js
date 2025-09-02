@@ -66,7 +66,7 @@ module.exports = {
             setTimeout(() => {
                 interaction.channel.delete();
             }, 5000); // 5000 milliseconds = 5 seconds
-        } catch (error) {
+        } catch {
             try{
                 const embed = new EmbedBuilder()
                     .setColor('#FF0000')

@@ -9,6 +9,7 @@ It ensures that new members are legitimate by requiring them to verify their ide
 - [Features](#features)
 - [How It Works](#how-it-works)
 - [Commands](#commands)
+- [Web Panel](#web-panel)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -20,6 +21,7 @@ It ensures that new members are legitimate by requiring them to verify their ide
     *   **Plain:** A simple verification panel where users click a button to get verified.
     *   **Ticket-based:** A more advanced system that creates a private ticket for manual verification by your staff team.
 *   **Secure OAuth2 Flow:** The primary verification method uses Discord's OAuth2 for a secure and seamless user experience.
+*   **Web Panel:** A web interface for users to register and manage their accounts (optional).
 *   **Manual Verification Fallback:** A manual verification option is available for users who encounter issues with the standard flow.
 *   **Role-Based Access:** Automatically assign a specific role to users upon successful verification.
 *   **Slash Commands:** All administrative actions are handled through intuitive and easy-to-use slash commands.
@@ -67,6 +69,17 @@ This command is used to create and manage verification panels.
         *   `requirements` (Optional): A role that users must have to create a verification ticket.
         *   `instructions` (Optional): Custom instructions to show in the ticket.
 
+## Web Panel
+
+This project also includes an optional web panel that can be used for user registration and management. The web panel is not required for the bot's core verification functionality.
+
+The API for the web panel is included in this repository. The frontend for the web panel is not included and would need to be developed separately.
+
+The API includes the following routes:
+- `POST /api/register`: Register a new user.
+- `POST /api/login`: Log in a user and receive an authentication token.
+- `POST /api/verifyToken`: Verify an authentication token.
+
 ## Installation
 
 1.  **Clone the repository:**
@@ -83,11 +96,21 @@ This command is used to create and manage verification panels.
     npm install
     ```
 4.  **Set up your environment variables:**
-    Rename the `.env.example` file (if it exists) to `.env` and fill in the required values. See the [Configuration](#configuration) section for more details.
+    Rename the `.env.example` file to `.env` and fill in the required values. See the [Configuration](#configuration) section for more details.
 
-5.  **Start the bot:**
+5.  **Deploy Slash Commands:**
+    Before starting the bot, you need to deploy the slash commands to Discord.
     ```bash
-    node index.js
+    npm run deploy-commands
+    ```
+
+6.  **Start the bot:**
+    ```bash
+    npm start
+    ```
+    For development, you can use `nodemon` to automatically restart the bot on file changes:
+    ```bash
+    npm run dev
     ```
 
 ## Configuration
@@ -98,7 +121,10 @@ The bot is configured using environment variables, which should be placed in a `
 DISCORD_TOKEN=
 CLIENT_ID=
 CLIENT_SECRET=
-REDIRECT_URI=
+REDIRECT_URI=http://localhost:2999/auth/callback
+PORT=2999
+CORS_ORIGIN=http://localhost:3000
+COOKIE_DOMAIN=localhost
 ```
 
 ### Variable Explanations
@@ -106,7 +132,10 @@ REDIRECT_URI=
 *   `DISCORD_TOKEN`: The token for your Discord bot. You can get this from the [Discord Developer Portal](https://discord.com/developers/applications).
 *   `CLIENT_ID`: The client ID of your Discord application. This can also be found in the Developer Portal.
 *   `CLIENT_SECRET`: The client secret of your Discord application, used for the OAuth2 flow. Keep this value secure.
-*   `REDIRECT_URI`: The URL that Discord will redirect users to after they authorize the bot. This must match the redirect URI you set in the "OAuth2" section of your application in the Developer Portal. For this bot, it will typically be `http://your_domain_or_ip:2999/auth/callback`.
+*   `REDIRECT_URI`: The URL that Discord will redirect users to after they authorize the bot. This must match the redirect URI you set in the "OAuth2" section of your application in the Developer Portal.
+*   `PORT` (Optional): The port for the web server to run on. Defaults to `2999`.
+*   `CORS_ORIGIN` (Optional): The allowed origin for CORS requests. Defaults to `['https://test.estopia.net', 'https://restore.estopia.net']`.
+*   `COOKIE_DOMAIN` (Optional): The domain for cookies set by the web server. Defaults to `.estopia.net`.
 
 ## Usage
 
